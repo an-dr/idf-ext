@@ -1,6 +1,18 @@
 # idf-ext
 
+<img src="logo.png" width="250">
+
 Powershell module extending capabilities of ESP-IDF framework and simplifying work with it
+
+[@PowershellGallery](https://www.powershellgallery.com/packages/idf-ext)
+
+## Instalation
+
+In powershell:
+
+```powershell
+Install-Module -Name idf-ext
+```
 
 ## Functions
 
@@ -112,3 +124,14 @@ Project info
     - Name                blink
     - Target              Not set. Use "idf set-target TARGET_NAME"
 ```
+
+## License
+
+This work is licensed under the terms of the MIT license.
+
+For a copy, see: [LICENSE](LICENSE)
+
+- site:    https://agramakov.me
+- e-mail:  mail@agramakov.me
+
+[![Donate](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://paypal.me/4ndr/1eur)
