@@ -9,8 +9,7 @@ Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 
 
 function _getPort($port) {
-    if ($ESPPORT -eq $null) { $ESPPORT = $env:ESPPORT }
-    if ($port -eq $null) { $port = $ESPPORT }
+    if ($port -eq $null) { $port = $env:ESPPORT }
     return $port
 }
 function _getElf($path) {
@@ -86,29 +85,7 @@ function ReadNget {
 # Public
 # =============================================================================
 function Idf {
-    Start-Process -NoNewWindow -FilePath $(_getIdfPython) -Args "`"${env:IDF_PATH}/tools/idf.py`" $args"
-}
-
-
-function Idf-Print {
-    if ($IDF_PATH -eq $null) { $IDF_PATH = $env:IDF_PATH }
-    if ($IDF_BIN_PATHS -eq $null) { $IDF_BIN_PATHS = $env:IDF_BIN_PATHS }
-    if ($IDF_TARGET -eq $null) { $IDF_TARGET = $env:IDF_TARGET }
-    if ($IDF_ELF -eq $null) { $IDF_ELF = $env:IDF_ELF }
-    if ($ESPPORT -eq $null) { $ESPPORT = $env:ESPPORT }
-    if ($IDF_PYTHON -eq $null) { $IDF_PYTHON = Get-Command "python" }
-    if ($OPENOCD_PATH -eq $null) { $OPENOCD_PATH = $env:OPENOCD_PATH }
-    if ($OPENOCD_SCRIPTS -eq $null) { $OPENOCD_SCRIPTS = $env:OPENOCD_SCRIPTS }
-
-    Write-Output "`$IDF_PATH        $IDF_PATH"
-    Write-Output "`$IDF_TARGET      $IDF_TARGET"
-    Write-Output "`$IDF_ELF         $IDF_ELF"
-    Write-Output "`$ESPPORT         $ESPPORT"
-    # Write-Output "`$IDF_PYTHON      $IDF_PYTHON"
-    Write-Output "`$OPENOCD_PATH    $OPENOCD_PATH"
-    Write-Output "`$OPENOCD_SCRIPTS $OPENOCD_SCRIPTS"
-    # Write-Output "`$Path            $env:Path"
-    Write-Output "`$IDF_BIN_PATHS   $IDF_BIN_PATHS"
+    Start-Process -NoNewWindow -Wait -FilePath $(_getIdfPython) -Args "`"${env:IDF_PATH}/tools/idf.py`" $args"
 }
 
 function Idf-SetupEnv {
@@ -119,7 +96,7 @@ function Idf-SetupEnv {
         $pair = $line.split("=") # split in name, val
         $var_name = $pair[0].Trim() # trim spaces on the ends of the name
         $var_val = $pair[1].Trim() # trim spaces on the ends of the val
-        if($var_name -eq "PATH"){
+        if ($var_name -eq "PATH"){
             $var_val = $var_val -replace "%PATH%", "" # remove path
             $var_name = "IDF_BIN_PATHS"
         }
@@ -127,8 +104,8 @@ function Idf-SetupEnv {
         $envars_array += (, ($var_name, $var_val))
     }
 
-    foreach ($pair  in $envars_array) # setting the values
-    {
+    foreach ($pair  in $envars_array) {
+        # setting the values
         $var_name = $pair[0].Trim() # trim spaces on the ends of the name
         $var_val = $pair[1].Trim() # trim spaces on the ends of the val
         if ($var_val -ne ""){
@@ -140,109 +117,100 @@ function Idf-SetupEnv {
     Write-Output "`n[ DONE ]"
 }
 
-function Idf-Port($Port) {
-    if ($Port -ne $null) {
-        Set-Variable -Name "ESPPORT" -Value $Port -Scope "Global"
-    }
-    else {
-        return _getPort
-    }
-}
 
-function Idf-Target {
+function Idf-Export {
     Param(
-        [parameter(Mandatory = $false)]
-        [ValidateSet("esp32", "esp32s2")]
-        [String]$Target
+        [parameter(Mandatory = $false)] [String]$Path
     )
-    if ($Target) {
-        idf set-target $Target
+    $curr_location = $PWD
+    $is_found = $false
+    if ($Path) {
+        Set-Location $Path
+    }
+
+    while (!("$pwd" -eq "$($pwd.drive.name):\")) {
+        # while not top path
+        if (Test-Path ./export.ps1 -PathType Leaf) {
+            $is_found = $true
+            break
+        }
+        else {
+            Set-Location ..
+            Write-Output " - Checking : $(Get-Location)"
+        }
+    }
+
+    if (!$is_found){
+        Write-Output " - Checking : `$env:IDF_PATH";
+        Set-Location $env:IDF_PATH
+        if (Test-Path ./export.ps1 -PathType Leaf){
+            $is_found = $true
+        }
+    }
+
+    if ($is_found){
+        Write-Output " - Found IDF!"
+        . ./export.ps1
     }
     else {
-        return IdfProject-GetTarget
+        Write-Output "No IDF with export.ps1 found"
     }
+    Set-Location $curr_location
+    Write-Output "[ DONE ] Success: "
+    return $is_found
 }
 
-function Idf-Elf($Path) {
+function IdfProject-GetElf($Path) {
     return _getElf($Path)
 }
 
-
-function Idf-Export {
-    # TODO handling of the default value with ~/esp/esp-idf
+function Idf-Install {
     Param(
-        [parameter(Mandatory = $false)] [String]$path,
-        [parameter(Mandatory = $false)] [String]$port,
-        [parameter(Mandatory = $false)] [String]$elf,
-        [parameter(Mandatory = $false)] [ValidateSet("esp32", "esp32s2")] [String]$target,
-        [parameter(Mandatory = $false)] [String]$with_cmd,
-
-        [parameter(Mandatory = $false)] [Switch]$Default
+        [parameter(Mandatory = $false)] [String]$path
     )
-    $counter = 16
-    if (!$path) {
-        if ($(Test-Path -Path Env:IDF_PATH_DEFAULT)) {
-            Push-Location $Env:IDF_PATH_DEFAULT
+    $curr_location = $PWD
+    $is_found = $false
+    if ($path) {
+        Set-Location $path
+    }
+
+    while (!("$pwd" -eq "$($pwd.drive.name):\")) {
+        # while not top path
+        if (Test-Path ./install.ps1 -PathType Leaf) {
+            $is_found = $true
+            break
         }
+        else {
+            Set-Location ..
+            Write-Output " - Checking : $(Get-Location)"
+        }
+    }
+
+    if (!$is_found){
+        Write-Output " - Checking : `$env:IDF_PATH";
+        Set-Location $env:IDF_PATH
+        if (Test-Path ./install.ps1 -PathType Leaf){
+            $is_found = $true
+        }
+    }
+
+    if ($is_found){
+        Write-Output " - Found IDF!"
+        ./install.ps1
     }
     else {
-        Push-Location $path
+        Write-Output "No IDF with install.ps1 found"
     }
-    while ($counter) {
-        $is = Test-Path (Join-Path (Resolve-Path .) "export.ps1") -PathType Leaf
-        if ($is -eq $true) {
-
-            Write-Output " - Found IDF!";
-            . ./export.ps1
-            Pop-Location
-            Idf-Port $port
-            Idf-Elf $elf
-            if ($target) { Idf-Target $target }
-            else { Idf-Target }
-            if ($with_cmd) { Invoke-Expression -Command "$with_cmd" }
-            return
-        }
-        else {
-            Set-Location ..;
-            Write-Output " - Checking : $(Get-Location)";
-            $counter--;
-        }
-    }
-
-
-    Pop-Location
-    Write-Output "No exports.ps1 found"
-
+    Set-Location $curr_location
+    Write-Output "[ DONE ] Success: "
+    return $is_found
 }
-
-function Idf-Install {
-    $counter = 16
-    Push-Location .
-    while ($counter) {
-        $is = Test-Path (Join-Path (Resolve-Path .) "install.ps1") -PathType Leaf
-        if ($is -eq $true) {
-            ./install.ps1
-            Pop-Location
-            return
-        }
-        else {
-            Set-Location ..;
-            Write-Output (Get-Location);
-            $counter--;
-        }
-    }
-    Pop-Location
-    Write-Output "No esp-idf/install.ps1 found"
-
-}
-
-
 
 function IdfProject-GetName($path) {
     $val = $false # default value
     $file_name = "CMakeLists.txt"
 
-    if (!$path) { $path = Get-Location } ; Push-Location $path
+    if (!$Path) { $Path = Get-Location } ; Push-Location $Path
     $file_path = Join-Path $path $file_name
 
     $val = ReadNget -Path $file_path -LinePattern "^project[(]" -InlinePattern "project[(](.+)[)]"
@@ -252,15 +220,28 @@ function IdfProject-GetName($path) {
 }
 
 function IdfProject-GetTarget($Path){
-
-    $val = "esp32" # default value
     $file_name = "sdkconfig"
 
-    if (!$path) { $path = Get-Location } ; Push-Location $path
-    $file_path = Join-Path $path $file_name
+    if (!$Path) { $Path = Get-Location } ; Push-Location $Path
+    $file_path = Join-Path $Path $file_name
 
     $val = ReadNget -Path $file_path -LinePattern "^CONFIG_IDF_TARGET=" -InlinePattern "`"(.+)`""
     Pop-Location
 
+    if (!$val) {
+        Write-Output "Not set. Use `"idf set-target TARGET_NAME`""
+    }
     return $val
+}
+
+function Idf-Print($Path) {
+    $info = @"
+IDF info
+    - IDF_PATH          $env:IDF_PATH
+    - IDF_TOOLS_PATH    $env:IDF_TOOLS_PATH
+Project info
+    - Name              $(IdfProject-GetName $Path)
+    - Target            $(IdfProject-GetTarget $Path)
+"@
+    Write-Output $info
 }

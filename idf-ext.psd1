@@ -4,7 +4,7 @@
     RootModule        = 'idf-ext.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '0.9'
+    ModuleVersion     = '1.0'
 
     # Supported PSEditions
     # CompatiblePSEditions = @()
@@ -58,13 +58,13 @@
     # NestedModules = @()
 
     # Functions to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no functions to export.
-    FunctionsToExport = 'Idf', "Idf-Elf", "Idf-Export", "Idf-Install", "Idf-Print", "IdfProject-GetName", "IdfProject-GetTarget", "Idf-SetupEnv"
+    FunctionsToExport = 'Idf', "Idf-Export", "Idf-Install", "Idf-Print", "IdfProject-GetName", "IdfProject-GetTarget", "Idf-SetupEnv"
 
     # Cmdlets to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no cmdlets to export.
     CmdletsToExport   = @()
 
     # Variables to export from this module
-    VariablesToExport = @('EnvDirName')
+    VariablesToExport = @()
 
     # Aliases to export from this module, for best performance, do not use wildcards and do not delete the entry, use an empty array if there are no aliases to export.
     AliasesToExport   = @()
@@ -94,7 +94,7 @@
             ProjectUri   = 'https://github.com/an-dr/idf-ext'
 
             # A URL to an icon representing this module.
-            IconUri = ''
+            IconUri = 'https://raw.githubusercontent.com/an-dr/idf-ext/master/logo.png'
 
             # ReleaseNotes of this module
             ReleaseNotes = ''
