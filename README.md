@@ -102,6 +102,14 @@ Arguments:
 
 Return the project's target parsing `sdkconfig`
 
+### IdfProject-CleanComplete
+
+Arguments:
+
+- Path - path to export. Non-mandatory. If not set the current working directory is used
+
+Removes `./build` directory, `sdkconfig`, `sdkconfig.old`
+
 ### Idf-SetupEnv
 
 Place all IDF variable to your system environment (to the user scope) permanently. Instead of adding to `PATH` creates `IDF_BIN_PATHS` that you can append manually

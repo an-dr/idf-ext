@@ -160,9 +160,6 @@ function Idf-Export {
     return $is_found
 }
 
-function IdfProject-GetElf($Path) {
-    return _getElf($Path)
-}
 
 function Idf-Install {
     Param(
@@ -232,6 +229,22 @@ function IdfProject-GetTarget($Path){
         Write-Output "Not set. Use `"idf set-target TARGET_NAME`""
     }
     return $val
+}
+
+function IdfProject-GetElf($Path) {
+    return _getElf($Path)
+}
+
+function IdfProject-CleanComplete($Path){
+    if (!$Path) { $Path = Get-Location } ; Push-Location $Path
+    $dir_build = Resolve-Path "./build" -ErrorAction SilentlyContinue
+    $file_sdkconfig = Resolve-Path "./sdkconfig" -ErrorAction SilentlyContinue
+    $file_sdkconfig_old = Resolve-Path "./sdkconfig.old" -ErrorAction SilentlyContinue
+    if ($dir_build) { Remove-Item -Recurse $dir_build }
+    if ($file_sdkconfig) { Remove-Item $file_sdkconfig }
+    if ($file_sdkconfig_old) { Remove-Item $file_sdkconfig_old }
+    Write-Host Removed all old files!
+    Pop-Location
 }
 
 function Idf-Print($Path) {
