@@ -1,4 +1,8 @@
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+if($IsWindows)
+{
+    Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
+}
+
 . $PSScriptRoot/Get-EnvironmentVariableNames.ps1
 . $PSScriptRoot/Write-FunctionCallLogMessage.ps1
 . $PSScriptRoot/Update-SessionEnvironment.ps1
@@ -128,7 +132,13 @@ function Idf-Export {
         Set-Location $Path
     }
     $env:MSYSTEM=$null
-    while (!("$pwd" -eq "$($pwd.drive.name):\")) {
+    if($IsWindows){
+        $top_lev = "$($pwd.drive.name):\"
+
+    }else {
+        $top_lev = "/"
+    }
+    while (!("$pwd" -eq $top_lev)) {
         # while not top path
         if (Test-Path ./export.ps1 -PathType Leaf) {
             $is_found = $true
@@ -171,7 +181,13 @@ function Idf-Install {
         Set-Location $path
     }
     $env:MSYSTEM=$null
-    while (!("$pwd" -eq "$($pwd.drive.name):\")) {
+    if($IsWindows){
+        $top_lev = "$($pwd.drive.name):\"
+
+    }else {
+        $top_lev = "/"
+    }
+    while (!("$pwd" -eq $top_lev)) {
         # while not top path
         if (Test-Path ./install.ps1 -PathType Leaf) {
             $is_found = $true
