@@ -127,7 +127,7 @@ function Idf-Export {
     if ($Path) {
         Set-Location $Path
     }
-
+    $env:MSYSTEM=$null
     while (!("$pwd" -eq "$($pwd.drive.name):\")) {
         # while not top path
         if (Test-Path ./export.ps1 -PathType Leaf) {
@@ -170,7 +170,7 @@ function Idf-Install {
     if ($path) {
         Set-Location $path
     }
-
+    $env:MSYSTEM=$null
     while (!("$pwd" -eq "$($pwd.drive.name):\")) {
         # while not top path
         if (Test-Path ./install.ps1 -PathType Leaf) {
